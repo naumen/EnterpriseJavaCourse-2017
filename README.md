@@ -1,4 +1,4 @@
-#EnterpriseJavaCourse Demo
+# EnterpriseJavaCourse Demo
 Простой пример web-ориентированного приложения на Java с использованием [spring-boot](https://projects.spring.io/spring-boot/)
 
 Функции приложения:
