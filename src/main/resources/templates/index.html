@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Welcome</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/css/bootstrap.min.css"></link>
+</head>
+<body>
+    <div class="container">
+        <h1>Милый бложик</h1>
+        <a class="btn btn-success" href="/addMessage" target="_self">Новый пост</a>
+    </div>
+    <div class="container" th:each="item : ${messages}" th:object="${item}">
+        <h3 th:text="*{title}">title</h3>
+        <pre th:text="*{message}">message</pre>
+    </div>
+
+</body>
+</html>

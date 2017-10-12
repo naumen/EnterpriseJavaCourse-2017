@@ -1,0 +1,23 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Создать сообщение</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/css/bootstrap.min.css"></link>
+</head>
+<body>
+    <div class="container">
+        <h1>Создание сообщения</h1>
+        <form action="#" th:action="@{/addMessage}" method="post">
+            <div class="form-group">
+                <label for="title">Название:</label>
+                <input type="text" class="form-control" id="title" name="title"/>
+            </div>
+            <div class="form-group">
+                <label for="msg" >Сообщение:</label>
+                <textarea class="form-control" rows="5" name="message" id="msg"></textarea>
+            </div>
+            <button type="submit" class="btn btn-default">Создать</button>
+        </form>
+    </div>
+</body>
+</html>
