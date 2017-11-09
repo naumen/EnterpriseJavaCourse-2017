@@ -1,0 +1,1139 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>Software testing</title>
+
+    <meta name="description" content="Software testing talk">
+    <meta name="author" content="Dmitriy Kolmogortsev">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/white.css" id="theme">
+
+    <link rel="stylesheet" href="css/hljs/vs.css" id="highlight-theme">
+
+    <!-- Printing and PDF exports -->
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+        document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+
+    <!--[if lt IE 9]>
+        <script src="lib/js/html5shiv.js"></script>
+        <![endif]-->
+
+    <style>
+        .reveal .slide-number {
+            font-size: 22pt;
+            color: black;
+        }
+        
+        .reveal pre {
+            background: none;
+            border: none;
+            box-shadow: none;
+            width: auto;
+        }
+        
+        .reveal pre code {
+            color: black;
+            background: none;
+            box-shadow: none;
+            max-height: none;
+            line-height: 1.5;
+            overflow: hidden;
+            font-size: 82%;
+        }
+        
+        .reveal section img {
+            border: none;
+            box-shadow: none;
+        }
+        
+        .reveal .footer {
+            font-size: 22pt;
+            position: absolute;
+            left: 35%;
+            bottom: 0.5em;
+        }
+        
+        #corp-name {
+            color: orangered;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+        
+        .stroke {
+            text-decoration: line-through;
+        }
+        
+        .red-text {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="reveal">
+        <div class="footer">
+            <span id="corp-name"><b>NAUMEN</b></span>
+            <span id="speaker-name">Колмогорцев Дмитрий</span>
+        </div>
+        <!-- Any section element inside of this container is displayed as a slide -->
+        <div class="slides">
+            <section>
+                <h4>Тестирование програмного обеспечения</h4>
+                <h5>Как это?</h5>
+                <p>
+                    <small>
+                        Колмогорцев Дмитрий / <a href="mailto:dkolmogortsev@naumen.ru">dkolmogortsev@naumen.ru</a>
+                        <br/>
+                        <br/>
+                    </small>
+                </p>
+            </section>
+            <section>
+                <h3>План:</h3>
+                <ol>
+                    <li>Место тестирования при разработке</li>
+                    <li>Собственно, зачем тестировать?</li>
+                    <li>Виды тестирования</li>
+                    <li>Тесты как двигатель разработки</li>
+                    <li>Нагрузочное тестирование</li>
+                </ol>
+            </section>
+            <section>
+                <h4>
+                    Типичный жизненный цикл задачи
+                </h4>
+                <img src="img/task_wf.png">
+            </section>
+            <section>
+                <h4>
+                    Что происходит при тестировании
+                </h4>
+                <img src="img/testing_wf.png">
+            </section>
+            <section>
+                <h3>Зачем тестировать?</h3>
+                <p id="checkNoBugs">Проверить, что багов нет!</p>
+                <p class="fragment" id="aVotInet">А вот и нет!</p>
+            </section>
+            <section>
+                <h3>Цели тестирования:</h3>
+                <ul>
+                    <li class="fragment"> Определить, что продукт соотвествует заявленным требованиям</li>
+                    <li class="fragment"> Адекватно работает при любом наборе входных данных</li>
+                    <li class="fragment"> Выдает результат за адекватное время</li>
+                </ul>
+            </section>
+            <section>
+                <h4>Ручное тестирование</h4>
+                <ul>
+                    <li>Довольно затратно</li>
+                    <li>Тестировать регрессию еще более затратно</li>
+                    <li>Порой имеет место человеческий фактор</li>
+                </ul>
+            </section>
+            <section>
+                <h4>Автоматизированное тестирование</h4>
+                <ul>
+                    <li>Тоже не бесплатно</li>
+                    <li>Тестировать регрессию почти ничего не стоит</li>
+                    <li>Суждение робота неизменно</li>
+                    <li>Человеческий фактор, все таки тоже имеет место быть</li>
+                </ul>
+            </section>
+            <section>
+                <h4>AT</h4>
+                <img src="img/test_pyramid.png" />
+            </section>
+            <section>
+                <h4>Модульное тестирование<br>(Unit testing)</h4>
+                <img src="img/unit_test.png">
+            </section>
+            <section>
+                <h4>Sample</h4>
+                <pre>
+                    <code class="java" data-trim>
+package org.testingtalk.account;
+                            
+                           
+public class AccountInfoService
+{
+    ...
+                            
+    public AccountInfo createNewAccountInfo(){
+        AccountInfo newInfo = new AccountInfo(idSequence.getAndIncrement());
+        accountsData.put(newInfo.getAccountId(), newInfo);
+        return newInfo;
+    }
+    ...
+}
+                    </code>
+                </pre>
+            </section>
+            <section>
+                <h4>Как бы протестить?</h4>
+                <ol>
+                    <li class="fragment">Подготовить данные</li>
+                    <li class="fragment">Что-то сделать с данными</li>
+                    <li class="fragment">Проверить результат дейсвтий</li>
+                    <li class="fragment">Убрать за собой, если требуется</li>
+                </ol>
+            </section>
+            <section>
+                <h4>В первом приближении</h4>
+                <pre>
+                    <code class="java" data-trim>
+                        public static void main(String[] args)
+                        {   
+                            //Подготовка
+                            AccountInfoService service = new AccountInfoService();
+                            //Действия
+                            AccountInfo info = service.createNewAccountInfo();
+                            //Проверка
+                            assert 0 == info.getBalance();
+                        }
+                    </code>
+                </pre>
+            </section>
+            <section data-background-image="img/ne_nado_tak.png" data-background-size="contain">
+
+            </section>
+            <section>
+                <h4>Почему?</h4>
+                <ul>
+                    <li>Не нужно переизобретать велосипед, всё уже придумано за вас</li>
+                    <li>Много инструментов тестирования</li>
+                    <li>У всех имеются гибкие проверки</li>
+                    <li>Поддерживаются всеми IDE</li>
+                </ul>
+            </section>
+            <section>
+                <h4>Популярные инструменты для АТ в Java</h4>
+                <ul>
+                    <li>JUnit</li>
+                    <li>Spock</li>
+                    <li>TestNG</li>
+                </ul>
+            </section>
+            <section>
+                <h4>Простейший тест</h4>
+                <pre>
+                    <code class="java" data-trim>
+                        public class CalculatorTest {
+                            @Test
+                            public void testMultiply(){
+                                Assert.assertEquals(4, new Calculator().multiply(2,2));
+                            }
+                        }
+                    </code>
+                </pre>
+            </section>
+            <section>
+                <h4>Пример JUnit теста</h4>
+                <pre>
+                        <code class="java" data-trim>
+                            import static org.junit.Assert.*;
+                            import org.junit.Test;
+
+                            public class AccountInfoTest {
+
+                                @Test
+                                public void testNewInfoBalanceIsZero(){
+                                    //Подготовка
+                                    AccountInfoService service = new AccountInfoService();
+                                    //Действия
+                                    AccountInfo newInfo = service.createNewAccountInfo();
+                                    //Проверка
+                                    String message = "Balance is non zero"
+                                    assertEquals(message,0, newInfo.getBalance());
+                                }
+                            }
+                        </code>
+                    </pre>
+            </section>
+            <section>
+                <h4>JUnit аннотации</h4>
+                <pre>
+                    <code class="java" data-trim>
+                        public class BaseTest{
+                            @BeforeClass //Действия перед запуском класса
+                            public static void setupClass() {}
+
+                            @Before //Действия перед зауском теста
+                            public void setup() {}
+
+                            @After //Действия после завершения теста
+                            public void tearDown() {}
+
+                            @AfterClass //Действия после завершения тестового класса
+                            public void tearDownClass() {}
+                        }
+                    </code>
+                </pre>
+            </section>
+            <section>
+                <h3>@Test</h3>
+                <pre>
+                    <code class="java" data-trim>
+                            @Retention(RetentionPolicy.RUNTIME)
+                            @Target({ElementType.METHOD})
+                            public @interface Test {
+                                //Какой Exception мы ожидаем при тесте
+                                Class&lt? extends Throwable&gt expected() \
+                                default Test.None.class; 
+                            
+                                long timeout() default 0L; //Таймаут выполнения теста
+                            
+                                public static class None extends Throwable {
+                                    private static final long serialVersionUID = 1L;
+                            
+                                    private None() {
+                                    }
+                                }
+                            }
+                    </code>
+                </pre>
+            </section>
+            <section>
+                <h4>Что может быть</h4>
+                <pre>
+                    <code class="java" data-trim>
+                        public class AccountInfoServiceTest {
+                            private AccountInfoService service;
+                            
+                            @Before
+                            public void setup(){
+                                this.service = new AccountInfoService();
+                            }
+
+                            @Test(expected = IllegalArgumentException.class)
+                            public void testErrorWhenLoadNull(){
+                                this.service.getInfo(null);
+                            }
+
+                            @Test(timeout = 1000)
+                            public void testLoadWithinASecond(){
+                                this.service.get(1);
+                            }
+                        }
+                    </code>
+                </pre>
+            </section>
+            <section>
+                <h4>Виды проверок:</h4>
+                <ul>
+                    <li>assertEquals</li>
+                    <li>assertNotEquals</li>
+                    <li>assertTrue</li>
+                    <li>assertFalse</li>
+                    <li>assertThat</li>
+                </ul>
+            </section>
+            <section>
+                <h4>Интеграционное тестирование</h4>
+                <img src="img/integration_test.png">
+            </section>
+            <section>
+                <h4>Сервис переводов</h4>
+                <pre style="width:auto;">
+                    <code class="java" data-trim>
+                            public class TransferService
+                            {
+                                ...
+                                public void makeTransfer(long sourceAccount, 
+                                                         long targetAccount,
+                                                         double moneyAmount)
+                                {
+                                    //Проверить аккаунт источник
+                                    //Проверить целевой аккаунт
+                                    //Проверить сумму перевода
+                                    //Проверить наличие суммы у аккаунта источника
+                                    //Выполнить перевод
+                                }
+                                ...
+                            }                        
+                    </code>
+                </pre>
+            </section>
+            <section>
+                <h4>Сервис переводов: инициализация, поля</h4>
+                <pre>
+                <code class="java" data-trim>
+                        public class TransferService
+                        {
+                            private final AccountInfoService accountInfoService;
+                            private final TransferLogService logService;
+                                
+                            private int successFullTransfers = 0;
+                            private int failedTransfers =0;
+                            ...
+                        }                        
+                    </code>
+                </pre>
+            </section>
+            <section>
+                <h4>Сервис переводов: инициализация, конструктор</h4>
+                <pre style="width:auto;">
+                <code class="java" data-trim>
+                        public class TransferService
+                        {   
+                            ...
+                            public TransferService(AccountInfoService accountInfoService,
+                                                   TransferLogService logService)
+                            {
+                                this.accountInfoService = accountInfoService;
+                                this.logService = logService;
+                            }
+                            ...
+                        }                        
+                    </code>
+                </pre>
+            </section>
+            <section>
+                <h4>Сервис переводов. перевод</h4>
+                <pre style="width:auto;">
+                        <code class="java" data-trim>
+                                public class TransferService
+                                {
+                                    ...
+                                    public void makeTransfer(long sourceAccount, 
+                                                             long targetAccount, 
+                                                             double moneyAmount)
+                                    {
+                                        //Проверить аккаунт источник
+                                        if(sourceAccount <= 0){
+                                            throw new IllegalArgumentException("Invalid source account id: " 
+                                                                                + sourceAccount);
+                                        }
+                                        //Проверить целевой аккаунт
+                                        //Проверить сумму перевода
+                                        //Проверить наличие суммы у аккаунта источника
+                                        //Выполнить перевод
+                                    }
+                                    ...
+                                }                        
+                        </code>
+                    </pre>
+            </section>
+            <section>
+                <h4>Сервис переводов. перевод</h4>
+                <pre style="width:auto;">
+                            <code class="java" data-trim>
+                                    public class TransferService
+                                    {
+                                        ...
+                                        public void makeTransfer(long sourceAccount, 
+                                                                 long targetAccount,
+                                                                 double moneyAmount)
+                                        {
+                                            //Проверить аккаунт источник
+                                            //Проверить целевой аккаунт
+                                            if(targetAccount <= 0){
+                                                throw new IllegalArgumentException("Invalid target account id: "
+                                                                                    +targetAccount);
+                                            }
+                                            //Проверить сумму перевода
+                                            //Проверить наличие суммы у аккаунта источника
+                                            //Выполнить перевод
+                                        }
+                                        ...
+                                    }                        
+                            </code>
+                        </pre>
+            </section>
+            <section>
+                <h4>Сервис переводов. перевод</h4>
+                <pre style="width:auto;">
+                        <code class="java" data-trim style="font-size: 80%">
+                                public class TransferService
+                                {
+                                    ...
+                                    public void makeTransfer(long sourceAccount, 
+                                                             long targetAccount,
+                                                             double moneyAmount)
+                                    {
+                                        //Проверить аккаунт источник
+                                        //Проверить целевой аккаунт
+                                        //Проверить сумму перевода
+                                        if(moneyAmount <= 0){
+                                            throw new IllegalArgumentException("Non positive transfer amount 
+                                                                                is specified");
+                                        }
+                                        //Проверить наличие суммы у аккаунта источника
+                                        //Выполнить перевод
+                                    }
+                                    ...
+                                }                        
+                        </code>
+                    </pre>
+            </section>
+            <section>
+                <h4>Сервис переводов. перевод</h4>
+                <pre style="width:auto;">
+                        <code class="java" data-trim>
+                                public class TransferService
+                                {
+                                    ...
+                                    public void makeTransfer(long sourceAccount, long targetAccount, double moneyAmount)
+                                    {
+                                        //Проверить аккаунт источник
+                                        //Проверить целевой аккаунт
+                                        //Проверить сумму перевода
+                                        //Проверить наличие суммы у аккаунта источника
+                                        AccountInfo fromAccountInfo = accountInfoService.getInfo(sourceAccount);
+                                        if (fromAccountInfo.getCurrentBalance() < moneyAmount)
+                                        {
+                                            throw new UnsupportedOperationException("Not enough credit balance");
+                                        }
+                                        //Выполнить перевод
+                                    }
+                                    ...
+                                }                        
+                        </code>
+                    </pre>
+            </section>
+            <section>
+                <h4>Сервис переводов. перевод</h4>
+                <pre style="width:auto;">
+                        <code class="java" data-trim style=" font-size: 80%;">
+                                public class TransferService
+                                {
+                                    ...
+                                    public void makeTransfer(long sourceAccount, long targetAccount, double moneyAmount)
+                                    {
+                                        ...
+                                        //Выполнить перевод
+                                        try
+                                        {
+                                            performTransfer(sourceAccount, targetAccount, moneyAmount, fromAccountInfo);
+                                            logService.logTransfer(sourceAccount, targetAccount, moneyAmount);
+                                            successFullTransfers++;
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            failedTransfers ++;
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }                        
+                        </code>
+                    </pre>
+            </section>
+
+            <section>
+                <h4>Как быть с зависимостями?</h4>
+                <ul>
+                    <li class="fragment">Удовлетворять зависимости реальными объектами</li>
+                    <li class="fragment">Использовать ненастоящие объекты</li>
+                </ul>
+            </section>
+            <section>
+                <h3>Тест с реальными объектами: подготовка</h3>
+                <pre>
+                        <code class="java" data-trim>
+                                @Test
+                                public void transferTest(){
+                                    //Подготовка
+                                    AccountInfoService service = new AccountInfoServiceImpl();
+                                    AccountInfo sourceInfo = service.createNewAccountInfo();
+                                    service.updateBalance(sourceInfo.getAccountId(), 10.0);
+                                    AccountInfo targetInfo = service.createNewAccountInfo();
+                                    TransferService transferService = new TransferService(service, 
+                                                                                          new TransferLogService());
+                                    
+                                    ...
+                                }
+                        </code>
+                    </pre>
+            </section>
+            <section>
+                <h3>Тест с реальными объектами: действия</h3>
+                <pre>
+                            <code class="java" data-trim>
+                                    @Test
+                                    public void transferTest(){
+                                        ...
+                                        
+                                        //Действия
+                                        transferService.makeTransfer(sourceInfo.getAccountId(), targetInfo.getAccountId(), 5.0);
+                                
+                                        ...
+                                    }
+                            </code>
+                        </pre>
+            </section>
+            <section>
+                <h3>Тест с реальными объектами: проверки</h3>
+                <pre>
+                                <code class="java" data-trim>
+                                        @Test
+                                        public void transferTest(){
+                                            ...
+                                    
+                                            //Проверки
+                                            Assert.assertEquals(1, transferService.getSuccessFullTransfers());
+                                            Assert.assertEquals(5.0, 
+                                                                service.getInfo(sourceInfo.getAccountId()).getCurrentBalance(), 0.0);
+                                            Assert.assertEquals(5.0, 
+                                                                service.getInfo(targetInfo.getAccountId()).getCurrentBalance(), 0.0);
+                                        }
+                                </code>
+                            </pre>
+            </section>
+            <section>
+                <h3>Тест с реальными объектами: всё вместе</h3>
+                <pre>
+                    <code class="java" data-trim style="font-size: 80%">
+                            @Test
+                            public void transferTest(){
+                                //Подготовка
+                                AccountInfoService service = new AccountInfoServiceImpl();
+                                AccountInfo sourceInfo = service.createNewAccountInfo();
+                                service.updateBalance(sourceInfo.getAccountId(), 10.0);
+                                AccountInfo targetInfo = service.createNewAccountInfo();
+                                TransferService transferService = new TransferService(service, new TransferLogService());
+                                
+                                //Действия
+                                transferService.makeTransfer(sourceInfo.getAccountId(), targetInfo.getAccountId(), 5.0);
+                        
+                                //Проверки
+                                Assert.assertEquals(1, transferService.getSuccessFullTransfers());
+                                Assert.assertEquals(5.0, service.getInfo(sourceInfo.getAccountId()).getCurrentBalance(), 0.0);
+                                Assert.assertEquals(5.0, service.getInfo(targetInfo.getAccountId()).getCurrentBalance(), 0.0);
+                            }
+                    </code>
+                </pre>
+            </section>
+            <section>
+                <h4>Ненастоящие объекты</h4>
+                <ul>
+                    <li>Stub - Заглушка с заранее заданным поведением.</li>
+                    <li>Mock - тоже заглушка, но настраиваемая под каждый тест</li>
+                </ul>
+            </section>
+            <section>
+                <h4>
+                    Stub
+                </h4>
+                <h5>Верифицируется( проверяется ) состояние тестового класса</h5>
+                <img src="img/stub.png" />
+            </section>
+            <section>
+                <h4>Заглушка сервиса хранения данных аккаунтов</h4>
+                <pre>
+                    <code class="java" data-trim>
+                            public class AccountInfoStub implements AccountInfoService
+                            {
+                                private final static AccountInfo STUB = new AccountInfo(999, 10.00);
+                                private final static AccountInfoStub INSTANCE = new AccountInfoStub();
+                            
+                                private AccountInfoStub() { }
+                            
+                                public static AccountInfoStub get() { return INSTANCE; }
+                            
+                                @Override
+                                public AccountInfo createNewAccountInfo() { return STUB.clone(); }
+                                ...
+                                @Override
+                                public AccountInfo getInfo(long id) { return STUB.clone(); }
+                            }
+                    </code>
+                </pre>
+            </section>
+            <section>
+                <h4>Тест с использованием заглушки</h4>
+                <pre>
+                    <code class="java" data-trim>
+                            @Test
+                            public void testSuccessfullTransfers() throws Exception
+                            {
+                                TransferService transfers = new TransferService(AccountInfoStub.get(), new TransferLogService());
+                                transfers.makeTransfer(1, 2, 2.0);
+                                Assert.assertEquals(1, transfers.getSuccessFullTransfers());
+                            }
+                    </code>
+                </pre>
+            </section>
+            <section>
+                <h3>Mock - прокачанная заглушка</h3>
+                <h5>Используется для верификации поведения</h5>
+                <img src="img/mock.png" />
+            </section>
+            <section>
+                <h4>Тест с использованием умной-заглушки</h4>
+                <pre>
+                    <code class="java" data-trim>
+                            @Test
+                            public void testTransferLogged(){
+                                //Подготовка
+                                TransferLogService mockedLogService = Mockito.mock(TransferLogService.class);
+                                TransferService transfers = new TransferService(AccountInfoStub.get(), mockedLogService);
+                        
+                                //Действия
+                                transfers.makeTransfer(1, 2, 2.0);
+                        
+                                //Проверка
+                                //Проверяем, что метод logTransfer вызвался единожды с аргументами 1, 2, 2.0
+                                Mockito.verify(mockedLogService, Mockito.times(1)).logTransfer(1,2,2.0);
+                            }
+                    </code>
+                </pre>
+            </section>
+            <section>
+                <h4>Еще один пример умной заглушки: подготовка</h4>
+                <pre>
+                        <code class="java" data-trim>
+                                @Test
+                                public void testFailedTransfer(){
+                                    //Подготовка
+                                    AccountInfoService mockInfoService = Mockito.mock(AccountInfoService.class);
+                                    Mockito.when(mockInfoService.getInfo(1)).thenReturn(new AccountInfo(1, 10.0));
+                                    Mockito.when(mockInfoService.getInfo(2)).thenThrow(RuntimeException.class);
+                                    TransferService transferService = new TransferService(mockInfoService, new TransferLogService());
+                                    ...
+                                }
+                        </code>
+                    </pre>
+            </section>
+            <section>
+                <h4>Еще один пример умной заглушки: действия</h4>
+                <pre>
+                        <code class="java" data-trim>
+                                @Test
+                                public void testFailedTransfer(){
+                                    ...
+                                    //Действия
+                                    transferService.makeTransfer(1,2, 2.0);
+                                    ...
+                                }
+                        </code>
+                    </pre>
+            </section>
+            <section>
+                <h4>Еще один пример умной заглушки: проверки</h4>
+                <pre>
+                        <code class="java" data-trim>
+                                @Test
+                                public void testFailedTransfer(){
+                                    ...
+                            
+                                    //Проверки
+                                    Assert.assertEquals(1, transferService.getFailedTransfers());
+                                }
+                        </code>
+                    </pre>
+            </section>
+            <section>
+                <h4>Еще один пример умной заглушки</h4>
+                <pre>
+                    <code class="java" data-trim>
+                            @Test
+                            public void testFailedTransfer(){
+                                //Подготовка
+                                AccountInfoService mockInfoService = Mockito.mock(AccountInfoService.class);
+                                Mockito.when(mockInfoService.getInfo(1)).thenReturn(new AccountInfo(1, 10.0));
+                                Mockito.when(mockInfoService.getInfo(2)).thenThrow(RuntimeException.class);
+                                TransferService transferService = new TransferService(mockInfoService, new TransferLogService());
+                        
+                                //Действия
+                                transferService.makeTransfer(1,2, 2.0);
+                        
+                                //Проверки
+                                Assert.assertEquals(1, transferService.getFailedTransfers());
+                            }
+                    </code>
+                </pre>
+            </section>
+            <section>
+                <h4>Функциональное тестирование ( UI )</h4>
+                <img src="img/functional_test.png">
+            </section>
+            <section>
+                <h2>Selenium</h2>
+                Инcтрумент для автоматизированного тестирования WEB-приложений<br>
+                <ul>
+                    <li>Selenium WebDriver</li>
+                    <li>Selenium Grid</li>
+                </ul>
+            </section>
+            <section>
+                <h2>Selenium Webdriver</h2>
+                <ul>
+                    <li>Реализация на многих языках
+                        <li>Из коробки поддерживает управление Firefox
+                            <li>Можно научить управлять даже IE</li>
+                </ul>
+            </section>
+            <section>
+                <h2>Тестируем гугл: открываем браузер</h2>
+                <pre style="width:auto;"><code data-trim class="java">
+//  Создаем новый webdriver с указанием geckodriver
+System.setProperty("webdriver.gecko.driver", "${ путь до geckodriver }");
+System.setProperty("webdriver.firefox.bin", "${ путь до firefox }");
+WebDriver wd = new FirefoxDriver();
+</code></pre>
+            </section>
+
+            <section>
+                <h2>Тестируем гугл: открываем гугл</h2>
+                <pre style="width:auto;"><code data-trim class="java">
+// Открываем гугл
+wd.get("http://www.google.com");
+</code></pre>
+            </section>
+
+            <section>
+                <h2>Тестируем гугл:ищем в гугле selenium</h2>
+                <pre style="width:auto;"><code data-trim class="java">
+final String searchString = "selenium";
+
+// Находим поисковую строку и ищем "selenium"
+WebElement searchBox = wd.findElement(By.name("q"));
+searchBox.sendKeys(searchString);
+searchBox.submit();
+</code></pre>
+            </section>
+
+            <section>
+                <h2>Тестируем гугл: ждем поисковой выдачи</h2>
+                <pre style="width:auto;"><code class="java" data-noescape>
+// т.к. google асинхронный - ждем поисковой выдачи
+(new WebDriverWait(wd, 10)).until(new ExpectedCondition&lt;Boolean&gt;() {
+    public Boolean apply(WebDriver d) {
+         return d.getTitle().toLowerCase().startsWith(searchString);
+    }
+});
+</code></pre>
+            </section>
+
+
+            <section>
+                <h2>Тестируем гугл: закрываем браузер</h2>
+                <pre style="width:auto;"><code data-trim class="java">
+// закрываем webdriver
+wd.quit();
+                </code></pre>
+            </section>
+
+            <section>
+                <h2>Тестируем гугл</h2>
+                <pre style="width:auto;"><code class="java" style="font-size:60%;" data-trim>
+public class SeleniumTest
+{
+    @Test
+    public void googleTest() throws  Exception{
+        //  Создаем новый webdriver с указанием geckodriver
+        System.setProperty("webdriver.gecko.driver", "${ путь до geckodriver }");
+        System.setProperty("webdriver.firefox.bin", "${ путь до firefox }");
+        WebDriver wd = new FirefoxDriver();
+        // Открываем гугл
+        wd.get("http://www.google.com");
+        final String searchString = "selenium";
+        // Находим поисковую строку и ищем "selenium"
+        WebElement searchBox = wd.findElement(By.name("q"));
+        searchBox.sendKeys(searchString);
+        searchBox.submit();
+        // т.к. google асинхронный - ждем поисковой выдачи
+        (new WebDriverWait(wd, 10)).until(new ExpectedCondition&lt;Boolean&gt;() {
+            public Boolean apply(WebDriver d) {
+                return d.getTitle().toLowerCase().startsWith(searchString);
+            }
+        });
+        // закрываем webdriver
+        wd.quit();
+    }
+}
+</code></pre>
+            </section>
+            <section>
+                <h4>Первое правило тестов</h4>
+                <p>Тесты <b>должны</b> быть изолированны и не мешать друг другу</p>
+            </section>
+            <section>
+                <h4>Когда тесты запускать?</h4>
+                <ul>
+                    <li>Всегда</li>
+                    <li>Написал код - запусти тесты</li>
+                    <li>При сборке проекта</li>
+                    <li>В CI</li>
+                </ul>
+            </section>
+            <section>
+                <h4>А как понять что я достаточно написал?</h4>
+                <p>Измерить покрытие кода</p>
+            </section>
+            <section>
+                <h4>Покрытие кода</h4>
+                <p>Кол-во кода в % во время выполнения тестирования</p>
+                <ul style="font-size: 60%">
+                    <li>покрытие операторов — каждая ли строка исходного кода была выполнена и протестирована;</li>
+                    <li>покрытие условий — каждая ли точка решения (вычисления истинно ли или ложно выражение) была выполнена и протестирована;</li>
+                    <li>покрытие путей — все ли возможные пути через заданную часть кода были выполнены и протестированы;</li>
+                    <li>покрытие функций — каждая ли функция программы была выполнена;</li>
+                    <li>покрытие вход/выход — все ли вызовы функций и возвраты из них были выполнены.</li>
+                    <li>покрытие значений параметров — все ли типовые и граничные значения параметров были проверены.</li>
+                </ul>
+            </section>
+            <section>
+                <h4>JaCoCo</h4>
+                <pre>
+                        <code class="xml">
+                                <plugin>
+                                    <groupId>org.jacoco</groupId>
+                                    <artifactId>jacoco-maven-plugin</artifactId>
+                                    <version>0.7.9</version>
+                                </plugin>
+                        </code>
+                    </pre>
+            </section>
+            <section>
+                <h4>JaCoCo: результат</h4>
+                <pre><code>mvn clean install</code></pre>
+                <img src="img/jacoco.png">
+            </section>
+            <section>
+                <h4>Тесты как двигатель разработки</h4>
+                <p>Про модульное тестирование</p>
+                <img src="img/tdd-flowchart.png">
+            </section>
+            <section>
+                <h4>Плюсы и минусы</h4>
+                <ul>
+                    <li class="fragment">+ Код не страшно рефакторить</li>
+                    <li class="fragment">+ Помогает сразу визуализировать, то, что должен делать код</li>
+                    <li class="fragment">+ Более гибкий и расшяремый код</li>
+                    <li class="fragment">+ Самодокументированный код</li>
+                    <li class="fragment">- Если автор кода что-то не так понял, то и тесты тестируют не то</li>
+                </ul>
+            </section>
+            <section>
+                <h4>Разработка через поведение</h4>
+                <ul>
+                    <li>Появилось из TDD</li>
+                    <li>Тесты = описание поведения</li>
+                    <li>Тесты могут писать не только разработчики</li>
+                    <li>Используется почти естественный язык</li>
+                </ul>
+            </section>
+            <section>
+                <h4>Сценарий</h4>
+                <pre>
+                    Scenario: ищем в интернете
+                        Given: Я открываю www.google.com
+                        When:  В поисковую строку я ввожу "java"
+                        Then: Я вижу в поисковой выдаче "java.com"
+
+                </pre>
+            </section>
+            <section>
+                <h4>В коде:</h4>
+                <pre>
+                    <code class="java">
+                        public class SearchSteps {
+                            @Given("Я открываю (.*)")
+                            public void openUrl(String url) { ... }
+
+                            @When("В поисковую строку я ввожу (.*)")
+                            public void search(String searchString) { ... }
+
+                            @Then("Я вижу в поисковой выдаче (.*)")
+                            public void searchResults(String expectedSearchResult) { ... }
+                        }
+                    </code>
+                </pre>
+            </section>
+            <section>
+                <h3>Тесты</h3>
+                <ul>
+                    <li>Экономят время</li>
+                    <li>Тестируют больше</li>
+                    <li>Проверяют непреклонно</li>
+                    <li>Гибкий и читаемый код в итоге</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Нагрузочное тестирование</h2>
+                <img src="img/load.jpg" height="300px" />
+            </section>
+            <section>
+                <h2>Проблема</h2>
+                <ul>
+                    <li>Написана новая версия продукта - 4.0 (прошлая 3.8)
+                        <li>Старой пользуется много крупных клиентов(большое кол-во пользователей одновременно)
+                            <li>Новый продукт, конечно, прекрасен, но мы не знаем насколько хорошо он работает
+                                <li>Нужно сэмулировать работу пользователей
+                </ul>
+            </section>
+            <section>
+                <h2>Тестирование производительности</h2>
+                <div>Проверить как быстро может работать система или её компоненты</div>
+                <div>Что можно проверить:</div>
+                <ul>
+                    <li>Время отклика
+                        <li>Время отображения
+                            <li>Пропускную способность
+                </ul>
+            </section>
+            <section style="width: 100%">
+                <h2>Время отклика</h2>
+                <img src="img/resp.png" style="height: 500px">
+            </section>
+            <section>
+                <h2>Время отображения</h2>
+                <img src="img/render.png" style="height: 500px; max-height:150%">
+            </section>
+            <section>
+                <h2>Пропускная способность</h2>
+                <img src="img/bottleneck.jpg" style="height: 500px">
+            </section>
+            <section>
+                <h2>Виды тестирования производительности:</h2>
+                <ul>
+                    <li>Нагрузочное(load)
+                        <li>Стресс (stress)</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Нагрузочное тестирование</h2>
+                Цель: проверить показатели работы приложения при ожидаемой нагрузке
+            </section>
+
+
+            <section>
+                <h2>Стресс тестирование</h2>
+                Цель: проверить показатели работы приложения при диспропорциональной нагрузке
+            </section>
+            <section>
+                <h2>Stress in a nutshell</h2>
+                <img src="img/stress.png">
+            </section>
+            <section>
+                <h2>Процесс проведения</h2>
+                <ol>
+                    <li>Определяем требуемые показатели
+                        <li>Определяем сценарий нагрузочного тестирования
+                            <li>Проводим тестирование*
+                                <li>Собираем результат
+                                    <li>??????
+                                        <li>PROFIT, а может и нет
+                </ol>
+                <p style="font-size: 20pt;">*Проводить тестирование всегда стоит на одном и том же сервере</p>
+            </section>
+
+            <section>
+                <h2>JMeter</h2>
+                <p>Умеет тестировать:</p>
+                <ul>
+                    <li>Web
+                        <li>JDBC
+                            <li>и другое
+                </ul>
+            </section>
+
+            <section>
+                <h2>Получаем сценарий</h2>
+                <div>Два пути:</div>
+                <ol>
+                    <li>Написать запросы руками
+                        <li style="color: green;">Записать сценарий из браузера
+                </ol>
+            </section>
+
+            <section>
+                <h2>Запись сценария</h2>
+                <img src="img/proxy.png" height="400px">
+            </section>
+            <section>
+                <h4>Далее</h4>
+                <ul>
+                    <li>Воспроизводим сценарий</li>
+                    <li>Анализируем результат</li>
+                    <li>Радуемся <span class="fragment"> или нет</span></li>
+                </ul>
+            </section>
+            <section>
+                <h3>Спасибо за внимание</h3>
+            </section>
+        </div>
+
+        <script src="lib/js/head.min.js"></script>
+        <script src="js/reveal.js"></script>
+
+        <script>
+            // Full list of configuration options available at:
+            // https://github.com/hakimel/reveal.js#configuration
+            Reveal.initialize({
+                controls: false,
+                progress: true,
+                history: true,
+                center: true,
+                slideNumber: true,
+                width: "1150",
+
+                transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+                // Optional reveal.js plugins
+                dependencies: [{
+                    src: 'lib/js/classList.js',
+                    condition: function() {
+                        return !document.body.classList;
+                    }
+                }, {
+                    src: 'plugin/markdown/marked.js',
+                    condition: function() {
+                        return !!document.querySelector('[data-markdown]');
+                    }
+                }, {
+                    src: 'plugin/markdown/markdown.js',
+                    condition: function() {
+                        return !!document.querySelector('[data-markdown]');
+                    }
+                }, {
+                    src: 'plugin/highlight/highlight.js',
+                    async: true,
+                    condition: function() {
+                        return !!document.querySelector('pre code');
+                    },
+                    callback: function() {
+                        hljs.initHighlightingOnLoad();
+                    }
+                }, {
+                    src: 'plugin/zoom-js/zoom.js',
+                    async: true
+                }, {
+                    src: 'plugin/notes/notes.js',
+                    async: true
+                }]
+            });
+
+            Reveal.addEventListener('fragmentshown', function(event) {
+                if (event.fragment.id == 'aVotInet') {
+                    document.getElementById('checkNoBugs').classList.add("stroke");
+                }
+            });
+
+            Reveal.addEventListener('fragmenthidden', function(event) {
+                if (event.fragment.id == 'aVotInet') {
+                    document.getElementById('checkNoBugs').classList.remove("stroke");
+                }
+            });
+        </script>
+
+</body>
+
+</html>
