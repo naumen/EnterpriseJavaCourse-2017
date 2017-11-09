@@ -11,8 +11,8 @@ layout: default
 * Лекция 6. [RPC или социализация приложений](lecture/lecture-06.html)
 
 ## Демо с лекций
-* Лекция 1. [Приложение "за 5 минут"](demo/lecture-01)
-* Лекция 6. [пример RMI и SOAP](demo/lecture-06)
+* Лекция 1. [Приложение "за 5 минут"](https://github.com/naumen/EnterpriseJavaCourse-2017/tree/master/demo/lecture-01)
+* Лекция 6. [пример RMI и SOAP](https://github.com/naumen/EnterpriseJavaCourse-2017/tree/master/demo/lecture-06)
 
 
 
