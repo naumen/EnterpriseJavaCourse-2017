@@ -9,6 +9,7 @@ layout: default
 * Лекция 4. [Архитектура корпоративных приложений](lecture/lecture-04.html)
 * Лекция 5. [Тестирование програмного обеспечения](lecture/lecture-05.html)
 * Лекция 6. [RPC или социализация приложений](lecture/lecture-06.html)
+* Лекция 7. [Inversion of Control. Инверсия управления](lecture/lecture-07.html)
 
 ## Демо с лекций
 * Лекция 1. [Приложение "за 5 минут"](https://github.com/naumen/EnterpriseJavaCourse-2017/tree/master/demo/lecture-01)
