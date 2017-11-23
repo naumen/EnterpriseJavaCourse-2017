@@ -9,6 +9,7 @@
 * Лекция 5. [Тестирование програмного обеспечения](lecture/lecture-05.html)
 * Лекция 6. [RPC или социализация приложений](lecture/lecture-06.html)
 * Лекция 7. [Inversion of Control. Инверсия управления](lecture/lecture-07.html)
+* Лекция 8. [Работа с базами данных в Java](lecture/lecture-08.html)
 
 ## Демо с лекций
 * Лекция 1. [Приложение "за 5 минут"](demo/lecture-01)

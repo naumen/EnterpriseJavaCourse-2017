@@ -1,0 +1,818 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Работа с базами данных</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/white.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/vs.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal slide">
+			<div class="footer">
+							NAUMEN, Аркаев Андрей
+			</div>
+			<div class="slides">
+				<section>
+					<h2>Работа с базами данных</h2>
+					<h2>в Java</h2>
+				</section>
+
+				<section>
+					<h2>Зачем хранить данные в БД</h2>
+					<ol type="1">
+						<li>данные сохраняются между перезагрузками</li>
+						<li>меньшее использование RAM</li>
+						<li>транзакции</li>
+						<li>гибкая выборка данных</li>
+					</ol>
+				</section>
+
+				<section>
+					<h2>JDBC</h2>
+					<p>Java Database Connectivity</p>
+				</section>
+
+				<section>
+                    <h2>Особенности</h2>
+					<ul>
+                        <li>Платформо-независимое API</li>
+                        <li>Работа с БД через SQL</li>
+					</ul>
+				</section>
+
+                <section>
+                    <h2>Особенности</h2>
+                    <ul>
+                        <li>разработчик может не знать специфики базы данных, с которой работает</li>
+                        <li>Код практически не меняется, если компания переходит на другую базу данных (количество изменений зависит исключительно от различий между диалектами SQL)</li>
+                        <li>Не нужно устанавливать громоздкую клиентскую программу</li>
+                        <li>К любой базе можно подсоединиться через легко описываемый URL</li>
+                    </ul>
+                </section>
+
+				<section>
+                    <h2>Базовые интерфейсы</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+java.sql.Connection
+java.sql.Statement
+java.sql.PreparedStatement
+java.sql.CallableStatement
+java.sql.ResultSet
+                        </code>
+                    </pre>
+				</section>
+
+                <section>
+                    <h2>Подключение к БД</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+DriverManager.registerDriver(new org.postgresql.Driver());
+
+Connection conn = DriverManager.getConnection(
+   "jdbc:postgresql://localhost:5432/db_name",
+   "user", "password");
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Выполнение запроса на обновление данных</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+Statement stmt = conn.createStatement();
+stmt.executeUpdate(
+    "INSERT INTO student( login, name ) VALUES ( 'some_login', 'my name' ) " );
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Получение данных запроса</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+Statement stmt = conn.createStatement();
+ResultSet rs = stmt.executeQuery("SELECT * FROM student");
+
+while (rs.next()) {
+   System.out.println(
+       rs.getRow() + ". " +
+       rs.getString("login") + " " +
+       rs.getString("name"));
+}
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Метаданные запроса</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+Statement stmt = conn.createStatement();
+ResultSet rs = stmt.executeQuery( "SELECT * FROM student" );
+while ( rs.next() ) {
+   int numColumns = <b>rs.getMetaData()</b>.getColumnCount();
+   for ( int i = 1 ; i <= numColumns ; i++ ) {
+       System.out.println("COLUMN " + i + " = " + rs.getObject(i));
+   }
+}
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Параметризированный запрос</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+PreparedStatement ps =
+   conn.prepareStatement("SELECT login " +
+       " FROM users WHERE name = ?");
+<b>ps.setString(1, "Kent");</b>
+
+ResultSet rs = ps.executeQuery();
+while (rs.next()) {
+   System.out.println(rs.getString(1));
+}
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Закрытие ресурсов</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+try(Connection conn = DriverManager.getConnection(
+   "jdbc:...",   "user", "password")) {
+   try(Statement stmt = conn.createStatement();
+       ResultSet rs = stmt.executeQuery("...")) {
+             ...
+   }
+}
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Транзакции</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+conn.setAutoCommit(false);
+try {
+   ...
+   conn.commit();
+} catch (Throwable e) {
+   try { conn.rollback(); } catch (Throwable e) {
+       logger.warn("Could not rollback transaction", e);
+   }
+   throw e;
+}
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Массовые операции</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+String sql = "insert into employee (login, name) values (?, ?)";
+PreparedStatement ps = connection.prepareStatement(sql);
+
+for (Student st: students) {
+    ps.setString(1, st.getLogin());
+    ps.setString(2, st.getName());
+    <b>ps.addBatch();</b>
+}
+<b>ps.executeBatch();</b>
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Проблемы и минусы JDBC</h2>
+                    <ul>
+                        <li>Объект в Java != Объект в БД</li>
+                        <li>не ООП (наследование, переходы по графу объектов)</li>
+                        <li>концентрация на внутреннем представлении БД, а не на бизнес логике</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>ORM/JPA</h2>
+                    <ul>
+                        <li><b>Object-Relational Mapping</b></li>
+                        <li><b>Java Persistence API</b> — спецификация API Java EE, предоставляет возможность сохранять в
+                            удобном виде Java-объекты в базе данных (JSR 220, 317, 338)
+                        </li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Реализации JPA</h2>
+                    <ul>
+                        <li>Eclipse Link</li>
+                        <li>Hibernate</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Типы данных приложения</h2>
+                    <ol type="1">
+                        <li>объекты</li>
+                        <li>типы/классы</li>
+                        <li>свойства</li>
+                        <li>идентификаторы</li>
+                        <li>связи</li>
+                    </ol>
+                </section>
+
+                <section>
+                    <h2>Типы данных в БД</h2>
+                    <ol type="1">
+                        <li>Вендор</li>
+                        <li>Соединение</li>
+                        <li>Cхема</li>
+                        <li>Транзакция</li>
+                        <li>Таблица</li>
+                        <li>Столбец</li>
+                        <li>Строка</li>
+                        <li>Ограничения (...)</li>
+                        <li>Индекс</li>
+                        <li>Последовательность</li>
+                        <li>Хранимая процедура</li>
+                    </ol>
+                </section>
+
+                <section>
+                    <h2>Entity</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+<b>@Entity</b>
+public class User {
+    String login;
+    String name;
+    School school;
+   ...
+}
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Требования к Entity</h2>
+                    <ol type="1">
+                        <li>легковесный объект</li>
+                        <li>обычно, представление таблицы в реляционной БД</li>
+                        <li>удовлетворяет ограничениям
+                            <ul>
+                                <li>должен быть конструктор без аргументов</li>
+                                <li>класс не должен быть помечен как <b>final</b></li>
+                            </ul>
+                        </li>
+                    </ol>
+                </section>
+
+                <section>
+                    <h2>Идентификатор</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+@Entity
+public class Student {
+    <b>@Id</b>
+    String login;
+    String name;
+    School school;
+    ...
+}
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Имена в БД</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+@Entity
+@Table(name = "STUDENT")
+public class Student {
+    @Id
+    <b>@Column(name=”STUDENT_LOGIN”, length = 32)</b>
+    String login;
+
+    <b>@Column(name=”FULL_NAME”)</b>
+    String name;
+
+    School school;
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Сохранение даты/времени</h2>
+                    <ul>
+                        <li>@Temporal(TemporalType.DATE)</li>
+                        <li>@Temporal(TemporalType.TIME)</li>
+                        <li>@Temporal(TemporalType.TIMESTAMP)</li>
+                    </ul>
+
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+@Entity
+public class Student {
+    ...
+    <b>@Temporal(TemporalType.TIMESTAMP)</b>
+    Date creationDate;
+    ...
+}
+                        </code>
+                        </pre>
+                </section>
+
+                <section>
+                    <h2>Связи между объектами</h2>
+                    <ul>
+                        <li>one-to-one</li>
+                        <li>one-to-many</li>
+                        <li>many-to-many</li>
+                        <li>many-to-one</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Маппинг Many-To-One</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+@Entity
+public class Student {
+    ...
+    <b>@ManyToOne</b>(name=”SCHOOL_ID”, <b>fetch = FetchType.LAZY</b>)
+    School school;
+
+    <b>@ManyToOne</b>(name=”Man_ID”, <b>fetch = FetchType.EAGER</b>)
+    Man father;
+    ...
+}
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Persistence Context</h2>
+                    <ul>
+                        <li>множество управляемых сущностей</li>
+                        <li>в конкретном хранилище</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 style="text-transform:none">интерфейс EntityManager</h2>
+                    <ul>
+                        <li>определяет методы для общения с PersistenceContext</li>
+                        <li>создание и удаление объектов</li>
+                        <li>поиск объекта по первичному ключу</li>
+                        <li>позволяет выполнять запросы по сущностям</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 style="text-transform:none">Доступ к EntityManager</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+@PersistenceUnit
+EntityManagerFactory emf;
+EntityManager em = <b>emf.createEntityManager()</b>;
+
+или
+
+<b>@PersistenceContext</b>
+EntityManager em;
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2 style="text-transform:none">persistence.xml</h2>
+                    <pre style="box-shadow:none">
+                            <code data-trim data-noescape class="language-xml">
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;persistence&gt;
+    &lt;persistence-unit name=&quot;my-pu&quot;&gt;
+        &lt;description&gt;My Persistence Unit&lt;/description&gt;
+        &lt;provider&gt;
+            org.hibernate.jpa.HibernatePersistenceProvider
+        &lt;/provider&gt;
+        &lt;class&gt;sample.Student&lt;/class&gt;
+        &lt;class&gt;sample.School&lt;/class&gt;
+        &lt;properties&gt;
+            &lt;property name=&quot;javax.persistence.jdbc.url&quot;
+                value=&quot;jdbc:postgresql://localhost:5432/somedb&quot;/&gt;
+            &lt;property name=&quot;javax.persistence.jdbc.user&quot; 
+                value=&quot;name&quot;/&gt;
+            &lt;property name=&quot;javax.persistence.jdbc.password&quot; 
+                value=&quot;pass&quot;/&gt;
+        &lt;/properties&gt;
+    &lt;/persistence-unit&gt;
+&lt;/persistence&gt;
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Сохранение</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+@PersistenceContext
+private EntityManager entityManager;
+
+@Transactional
+public void insert() {
+    School school = new School(1, "Школа №1");
+    Student student = new Student("pupkin", "Вася пупкин", school);
+
+    entityManager.persist(school);
+    entityManager.persist(student);
+}
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                        <h2>Поиск</h2>
+                        <pre style="box-shadow:none">
+                            <code data-trim data-noescape class="language-java">
+@PersistenceContext
+private EntityManager entityManager;
+
+@Transactional
+public Student find(String login) {
+    return entityManager.find(Student.class, "pupkin");
+}
+                            </code>
+                        </pre>
+                </section>
+
+                <section>
+                    <h2>Удаление</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+@PersistenceContext
+private EntityManager entityManager;
+
+@Transactional
+public void delete(String login) {
+    Student student = find(login);
+    entityManager.remove(student);
+}
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Обновление</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+@PersistenceContext
+private EntityManager entityManager;
+
+@Transactional
+public void update(String login) {
+    Student student = find(login);
+    student.setName("Петров");
+    entityManager.merge(student);
+}
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>JPQL</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+@Transactional
+public List&lt;Student&gt; listStudents(String name) {
+    List&lt;Student&gt; students = entityManager
+        .createQuery("from " + Student.class.getName()
+            + " where name like :name", Student.class)
+        .setParameter("name", "%" + name + "%")
+        .getResultList();
+
+    return students;
+}
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2 style="text-transform:none">NativeQuery</h2>
+                    <pre style="box-shadow:none">
+                            <code data-trim data-noescape class="language-java">
+@Transactional
+public List&lt;String&gt; listLogins(String name) {
+    List&lt;String&gt; students = entityManager
+        .createNativeQuery("SELECT login FROM students "
+            + " WHERE name like :name")
+        .setParameter("name", "%" + name + "%")
+        .getResultList();
+
+    return students;
+}
+                        </code>
+                    </pre>
+                </section>
+                <section>
+                    <h2 style="text-transform:none">JPA Criteria</h2>
+                    <pre style="box-shadow:none">
+                            <code data-trim data-noescape class="language-java">
+@Transactional
+public List&lt;Student&gt; listStudentsByName(String name) {
+    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+    CriteriaQuery&lt;Student&gt; query = builder.createQuery(Student.class);
+    Root&lt;Student&gt; from = query.from(Student.class);
+    query.where(builder.equal(from.get("name"), name));
+    return entityManager.createQuery(query).getResultList();
+}
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Именованные запросы</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+@Entity
+@NamedQuery(name="Country.findAll",
+            query="SELECT c FROM Country c")
+public class Country {
+    ...
+}
+
+TypedQuery&lt;Country&gt; query =
+    em.createNamedQuery("Country.findAll", Country.class);
+List&lt;Country&gt; results = query.getResultList();
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2 style="text-transform:none">JPA Criteria</h2>
+                    <ul>
+                        <li>type safe</li>
+                        <li>динамичные запросы</li>
+                        <li>оверхед</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Кэши</h2>
+                    <ul>
+                        <li>ehcache</li>
+                        <li>oscache</li>
+                        <li>infinispan</li>
+                        <li>...</li>
+                    </ul>
+                </section>
+
+                <section>
+                        <h2 style="text-transform:none">@Cacheable</h2>
+                        <pre style="box-shadow:none">
+                                <code data-trim data-noescape class="language-java">
+@Entity
+@Cacheable
+class Student {
+    ...
+}
+                            </code>
+                        </pre>
+                    </section>
+
+                <section>
+                    <h2>Уровни кэшей</h2>
+                    <ul>
+                        <li>Кеш первого уровня (First-level cache)</li>
+                        <li>Кеш второго уровня (Second-level cache)</li>
+                        <li>Кеш запросов (Query cache)</li>
+                    </ul>
+                    <h5>PS Нужно включать в конфигурации</h5>
+                </section>
+
+                <section>
+                    <h2>Минусы ORM</h2>
+                    <ul>
+                        <li>SQL не всегда оптимален</li>
+                        <li>больше нагрузка по сравнению с JDBC</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Пул коннектов</h2>
+                    <ul>
+                        <li>Hikari</li>
+                        <li>c3p0</li>
+                        <li>apache dbcp</li>
+                        <li>...</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Задачи</h2>
+                    <ul>
+                        <li>Подготовка новых соединений</li>
+                        <li>БЫСТРОЕ получение соединений из пула</li>
+                        <li>Контроль количества соединений в пуле</li>
+                        <li>Контроль ошибок при возврате в пул</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 style="text-transform:none">Spring Data JPA</h2>
+                </section>
+
+                <section>
+                    <h2 style="text-transform:none">CrudRepository&lt;T, ID&gt;</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+T findOne(ID primaryKey);
+Iterable&lt;T&gt; findAll();
+Long count();
+boolean exists(ID primaryKey);
+T save(T entity);
+void delete(T entity);
+...
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+userRepository.findAll();
+userRepository.findOne(id);
+userRepository.count();
+userRepository.save(user);
+userRepository.exists(userId);
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2 style="text-transform:none">PagingAndSortingRepository&lt;T, ID&gt;</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+Iterable&lt;T&gt; findAll(Sort sort);
+Page&lt;T&gt; findAll(Pageable pageable);
+...
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Примеры</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+Long countByFirstName(String firstName);
+
+List&lt;User&gt; findByUserTypeOrderByFirstNameDesc(UserTypeuserType);
+
+User findByFirstNameAndLastName(String firstName, String lastName);
+
+User findByFirstNameAndLastNameAllIgnoreCase(
+                                String firstName, String lastName);
+
+List&lt;Task&gt; findByAssignedToUserFirstNameAndAssignedToUserLastName(
+                                String firstName, String lastName);
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Конструкции</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+find...By..., count...By..., delete...By...
+...Distinct...
+...And..., ...Or...
+...Equals..., (...Is...), ...Not..., ...In..., ...NotIn...,
+...Like..., ...NotLike..., ...StartingWith...,
+...EndingWith..., ...Containing...
+...Between..., ...LessThan..., ...LessThenEqual...,
+...GreaterThan..., ...GreaterThanEqual...
+...After..., ...Before...
+...IsNull..., ...isNotNull, (...notNull...), True, False
+...IgnoreCase..., ...AllIgnoreCase...
+...OrderBy...Asc, ...OrderBy...Desc
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Ограничение количества</h2>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+...first10...
+Pageable
+
+List&lt;Task&gt; findFirst3ByCreatedByUser(User user, Sort sort);
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Собственные запросы</h2>
+                    <ul>
+                        <li>@Query, @Param</li>
+                        <li>JPQL (Java Persistence Query Language)</li>
+                        <li>Проверка на старте приложения</li>
+                    </ul>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+@Query("select t from Task t where t.number IN (:numbers)")
+List&lt;Task&gt; findByNumberIn(
+             @Param("numbers") Collection&lt;String&gt; numbers);
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Собственные интерфейсы</h2>
+                    <ol type="1">
+                        <li>Создать интерфейс</li>
+                        <li>Создать реализацию</li>
+                        <li>Добавить аннотацию @Repository</li>
+                    </ol>
+                </section>
+
+                <section>
+                    <pre style="box-shadow:none">
+                        <code data-trim data-noescape class="language-java">
+public interface CustomTaskRepository {
+    String findTaskNumberByTitleFragment(String fragment);
+}
+
+@Repository
+public class TaskRepositoryImpl implements CustomTaskRepository {
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @Override
+    public String findTaskNumberByTitleFragment(String fragment) {
+        Query query = entityManager.createNativeQuery(...);
+        query.setParameter("fragment", "%" + fragment + "%");
+        return (String) query.getSingleResult();
+    }
+}
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Минусы</h2>
+                    <ul>
+                        <li>Очень длинные имена методов</li>
+                        <li>SQL может быть более эффективным</li>
+                        <li>Нет поддержки агрегаций</li>
+                    </ul>
+                </section>
+
+                <section>
+                        <h2>Конец</h2>
+                </section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				history: true,
+				// Shows the slide number using default formatting
+				slideNumber: true,
+				controls: false,
+				center: true,
+				transition: 'slide',
+				// More info https://github.com/hakimel/reveal.js#dependencies
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>
