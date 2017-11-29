@@ -10,8 +10,10 @@
 * Лекция 6. [RPC или социализация приложений](lecture/lecture-06.html)
 * Лекция 7. [Inversion of Control. Инверсия управления](lecture/lecture-07.html)
 * Лекция 8. [Работа с базами данных в Java](lecture/lecture-08.html)
+* Лекция 9. [Многопоточность и JAVA](lecture/lecture-09.html)
 
 ## Демо с лекций
 * Лекция 1. [Приложение "за 5 минут"](demo/lecture-01)
 * Лекция 3. [Design Patterns](demo/lecture-03)
 * Лекция 6. [пример RMI и SOAP](demo/lecture-06)
+* Лекция 9. [примеры "Многопоточность и JAVA"](demo/lecture-09)
