@@ -11,7 +11,8 @@
 * Лекция 7. [Inversion of Control. Инверсия управления](lecture/lecture-07.html)
 * Лекция 8. [Работа с базами данных в Java](lecture/lecture-08.html)
 * Лекция 9. [Многопоточность и JAVA](lecture/lecture-09.html)
-* Лекция 10.[Немного анатомии Java: Java-байткод, JOL, Classloading, JIT](https://docs.google.com/presentation/d/e/2PACX-1vRAUxqPlgVjRQqVf72yvy1vY7qm1AApgG8x_SqigVYfJzFN-UAfMHHs7YDu35XRfMvairB47eBEpnyH/pub?start=false&loop=false&delayms=3000)
+* Лекция 10.[JVM: управление памятью. GC.](https://docs.google.com/presentation/d/16sk6CxylIp8f5X-zLOi6jB9dR3qcB1R6XE0UvEiA3kA/edit?usp=sharing)
+* Лекция 11.[Немного анатомии Java: Java-байткод, JOL, Classloading, JIT](https://docs.google.com/presentation/d/e/2PACX-1vRAUxqPlgVjRQqVf72yvy1vY7qm1AApgG8x_SqigVYfJzFN-UAfMHHs7YDu35XRfMvairB47eBEpnyH/pub?start=false&loop=false&delayms=3000)
 
 ## Демо с лекций
 * Лекция 1. [Приложение "за 5 минут"](demo/lecture-01)
